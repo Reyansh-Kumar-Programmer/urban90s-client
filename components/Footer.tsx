@@ -1,31 +1,72 @@
-"use client"
+"use client";
+
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import React from "react";
+import React, { useState } from "react";
 
 function Footer() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = (document.getElementById("email-input") as HTMLInputElement).value;
+  
+    try {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbyTc3-DbMrQAo3LQBdSTiWgHq8nY_xmRouUdzorGVctwHFu2J2aabx0wCvfCdXY6zXv/exec", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+  
+      const result = await response.json();
+      if (result.success) {
+        alert("Subscribed successfully!");
+      } else {
+        alert("Something went wrong!");
+      }
+    } catch (err) {
+      console.error("Error subscribing:", err);
+      alert("Failed to subscribe. Check console for details.");
+    }
+  };
+
   return (
-    <footer className="bg-white border-t mt-20 h-[200px] ">
-      <div className="mx-auto px-4 pt-12 pb-6 text-center">
+    <footer className="bg-white border-t mt-20 pt-12 pb-6">
+      <div className="mx-auto px-4 text-center">
         <h2 className="text-2xl font-bold">Subscribe to our emails</h2>
         <p className="mt-2 text-gray-600">
           Be the first to know about new collections and exclusive offers.
         </p>
-        <form className="mt-6 flex items-center justify-center">
+        <form onSubmit={handleSubscribe} className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
           <input
             type="email"
+            value={email}
+            id="email-input"
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
+            required
             className="px-4 py-2 w-72 border border-gray-300 rounded-full focus:outline-none"
           />
           <button
             type="submit"
-            className="ml-2 bg-black text-white px-4 py-2 rounded-full hover:bg-gray-900"
+            disabled={status === "loading"}
+            className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-900 flex items-center justify-center"
           >
-            <ArrowRightIcon className="h-5 w-5 text-white cursor-pointer" />
+            <ArrowRightIcon className="h-5 w-5 text-white" />
           </button>
         </form>
+        {status === "success" && (
+          <p className="text-green-600 mt-2 text-sm">Thanks for subscribing!</p>
+        )}
+        {status === "error" && (
+          <p className="text-red-500 mt-2 text-sm">Something went wrong. Try again.</p>
+        )}
       </div>
-      <div className="text-center mb-8 text-sm text-gray-500 pb-6">
-        <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 px-4">
+
+      <div className="text-center mt-10 text-sm text-gray-500 px-4">
+        <div className="flex flex-wrap justify-center gap-x-2 gap-y-1">
           <span>© 2025, Urban90s Created by Reyansh</span>
           <span>·</span>
           <a href="#" className="hover:underline">

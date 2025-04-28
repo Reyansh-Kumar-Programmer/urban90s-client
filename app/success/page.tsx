@@ -1,93 +1,126 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import Cookies from "js-cookie";
 import { useState } from "react";
 
 export default function SuccessPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const sessionId = searchParams.get("session_id");
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const email = user?.emailAddresses[0]?.emailAddress;
   const name = user?.fullName;
 
   const [loading, setLoading] = useState(false);
   const [orderSaved, setOrderSaved] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [error, setError] = useState("");
+
+  const validatePhoneNumber = (num: string) => /^[6-9]\d{9}$/.test(num);
 
   const saveOrder = async () => {
     if (loading || orderSaved) return;
 
+    if (!phoneNumber || !shippingAddress) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      setError("Please enter a valid 10-digit Indian phone number.");
+      return;
+    }
+
+    setError("");
+
     const cookieData = Cookies.get("cart");
     const cartItems = cookieData ? JSON.parse(cookieData) : [];
 
-    console.log("🧾 Cart Items:", cartItems);
-
-    const total = cartItems.reduce(
-      (sum: number, item: any) => sum + item.price * item.quantity,
-      0
-    );
-
-    const formattedProducts = cartItems.map((item: any) => {
-      console.log("🛒 Item from cart:", item);
-    
-      return {
-        title: item.title || "",                // check these are actually there
-        image: item.image || "",
-        quantity: item.quantity || 1,
-        totalPrice: item.price * item.quantity || 0,
-        size: item.size || "N/A",
-      };
-    });
-    
+    const formattedProducts = cartItems.map((item: any) => ({
+      title: item.title || "",
+      image: item.image || "",
+      quantity: item.quantity || 1,
+      totalPrice: item.price * item.quantity || 0,
+      size: item.size || "N/A",
+    }));
 
     const orderData = {
       customerName: name,
       customerEmail: email,
+      phoneNumber,
+      address: shippingAddress,
       products: formattedProducts,
+      status: "paid",
     };
 
     setLoading(true);
     const response = await fetch("/api/save-order", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData),
     });
 
     const resJson = await response.json();
-    console.log("✅ Response from /api/save-order:", resJson);
+    console.log("✅ Order response:", resJson);
 
     Cookies.remove("cart");
     setLoading(false);
     setOrderSaved(true);
-    router.push("/shop");
+    router.push("/order");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center flex-col">
-      <h1 className="text-3xl font-bold">Thank you for your purchase!</h1>
-      <p className="mt-2 text-gray-500">
-        Your order has been placed successfully.
-      </p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-10">
+      <div className="w-full max-w-md">
+        <img
+          src="/checkout.jpg"
+          alt="Order Illustration"
+          className="w-full h-auto object-cover rounded-t-2xl shadow-lg"
+        />
 
-      <button
-        onClick={saveOrder}
-        disabled={loading || orderSaved}
-        className={`mt-6 px-6 py-2 text-white rounded ${
-          loading || orderSaved
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-teal-600 hover:bg-teal-700"
-        }`}
-      >
-        {loading
-          ? "Saving Order..."
-          : orderSaved
-          ? "Order Confirmed"
-          : "Confirm Order"}
-      </button>
+        <div className="bg-white shadow-md p-6 sm:p-8 w-full rounded-b-2xl">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Thank you for your purchase!
+          </h1>
+          <p className="text-gray-500 mb-4">
+            Please enter your delivery details below.
+          </p>
+
+          <input
+            type="text"
+            placeholder="Phone Number"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            className="w-full mt-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+          />
+
+          <textarea
+            placeholder="Shipping Address"
+            value={shippingAddress}
+            onChange={(e) => setShippingAddress(e.target.value)}
+            className="w-full mt-3 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 h-28 resize-none"
+          />
+
+          {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+
+          <button
+            onClick={saveOrder}
+            disabled={loading || orderSaved}
+            className={`mt-6 w-full py-3 text-white font-medium rounded-lg transition ${
+              loading || orderSaved
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-teal-600 hover:bg-teal-700"
+            }`}
+          >
+            {loading
+              ? "Saving Order..."
+              : orderSaved
+              ? "Order Confirmed"
+              : "Confirm Order"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

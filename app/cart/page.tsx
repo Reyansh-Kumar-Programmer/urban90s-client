@@ -9,6 +9,10 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { loadStripe } from "@stripe/stripe-js";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation"; // at the top
+import toast from "react-hot-toast";
+
+// inside your component
 
 interface CartItem {
   title: string;
@@ -24,6 +28,7 @@ const stripePromise = loadStripe(
 
 export default function CartUI() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+const router = useRouter();
   const { user } = useUser();
   const email = user?.emailAddresses[0]?.emailAddress;
 
@@ -55,32 +60,41 @@ export default function CartUI() {
   };
 
   const checkoutHandler = async () => {
+    if (!user) {
+      toast.error("Please sign in to continue checkout");
+      setTimeout(() => {
+        router.push("/authentication/signup");
+      }, 1500); // give them 1.5 sec to read the toast
+      return;
+    }
+  
     try {
       const cookieData = Cookies.get("cart");
       const cartItems = cookieData ? JSON.parse(cookieData) : [];
-
+  
       if (cartItems.length === 0) {
-        alert("Your cart is empty");
+        toast.error("Your cart is empty");
         return;
       }
-
+  
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: cartItems,
-          email: email, // dynamically sent from Clerk
+          email: email,
         }),
       });
-
+  
       if (!res.ok) throw new Error("Failed to create checkout session");
-
+  
       const data = await res.json();
       window.location.href = data.url;
     } catch (err) {
       console.error("Error creating checkout session:", err);
+      toast.error("Something went wrong while creating session.");
     }
-  }
+  };
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,

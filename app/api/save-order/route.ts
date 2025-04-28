@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log("Received order:", body);
 
-    const { customerName, customerEmail, products } = body;
+    const { customerName, customerEmail, phoneNumber, address, products, status } = body;
 
     const sanityProducts = products.map((item: any) => ({
       _key: uuidv4(),
@@ -18,11 +18,18 @@ export async function POST(req: Request) {
       size: item.size,
     }));
 
+    const orderNumber = uuidv4(); // Unique order ID
+    const orderDate = new Date().toISOString(); // ISO formatted datetime
+
     await client.create({
       _type: "order",
       customerName,
       customerEmail,
-      status: "pending",
+      phoneNumber, // Include phone number
+      address, // Include address
+      orderNumber,
+      orderDate,
+      status: status || "pending",
       products: sanityProducts,
     });
 
