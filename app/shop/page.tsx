@@ -1,5 +1,4 @@
 "use client";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
