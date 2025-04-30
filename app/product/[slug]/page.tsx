@@ -10,6 +10,8 @@ interface PageProps {
 }
 
 export default async function ProductPage({ params }: PageProps) {
+  const { slug } = params;
+
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
     price,
@@ -19,7 +21,7 @@ export default async function ProductPage({ params }: PageProps) {
     sizes
   }`;
 
-  const product = await client.fetch(query, { slug: params.slug });
+  const product = await client.fetch(query, { slug });
 
   if (!product) return notFound();
 
