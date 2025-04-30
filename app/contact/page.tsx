@@ -1,8 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import Header from "@/components/Header";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/Footer";
 
 export default function Contact() {
