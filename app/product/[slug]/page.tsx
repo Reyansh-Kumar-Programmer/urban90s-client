@@ -1,16 +1,15 @@
+// app/product/[slug]/page.tsx
 import { client } from "@/utils/sanityClient";
 import ProductViewer from "../[slug]/ProductViewer";
 import { notFound } from "next/navigation";
 
-interface Props {
+interface PageProps {
   params: {
     slug: string;
   };
 }
 
-export default async function ProductPage({ params }: Props) {
-  const { slug } = params;
-
+export default async function ProductPage({ params }: PageProps) {
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
     price,
@@ -20,7 +19,7 @@ export default async function ProductPage({ params }: Props) {
     sizes
   }`;
 
-  const product = await client.fetch(query, { slug });
+  const product = await client.fetch(query, { slug: params.slug });
 
   if (!product) return notFound();
 
