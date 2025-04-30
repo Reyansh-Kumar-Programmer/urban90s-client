@@ -1,4 +1,3 @@
-// app/product/[slug]/page.tsx
 import { client } from "@/utils/sanityClient";
 import ProductViewer from "../[slug]/ProductViewer";
 import { notFound } from "next/navigation";
@@ -9,8 +8,8 @@ interface Props {
   };
 }
 
-export default async function ProductPage(props: Props) {
-  const { slug } = await props.params;
+export default async function ProductPage({ params }: Props) {
+  const { slug } = params;
 
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
