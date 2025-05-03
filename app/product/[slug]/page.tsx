@@ -1,17 +1,27 @@
+// app/product/[slug]/page.tsx
 import { client } from "@/utils/sanityClient";
-import ProductViewer from "./ProductViewer";
+import ProductViewer from "../[slug]/ProductViewer";
 import { notFound } from "next/navigation";
 
-// REMOVE TYPES TEMPORARILY
-export default async function ProductPage({ params }: any) {
-  const { slug } = params;
+interface Props {
+  params: {
+    slug: string;
+  };
+}
 
-  const product = await client.fetch(`*[_type == "product" && slug.current == $slug][0]{
-    title, price, originalPrice,
+export default async function ProductPage(props: Props) {
+  const { slug } = await props.params;
+
+  const query = `*[_type == "product" && slug.current == $slug][0]{
+    title,
+    price,
+    originalPrice,
     "previewImage": previewImage.asset->url,
     "images": images[].asset->url,
     sizes
-  }`, { slug });
+  }`;
+
+  const product = await client.fetch(query, { slug });
 
   if (!product) return notFound();
 
