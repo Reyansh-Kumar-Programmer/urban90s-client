@@ -3,14 +3,14 @@ import { client } from "@/utils/sanityClient";
 import ProductViewer from "./ProductViewer";
 import { notFound } from "next/navigation";
 
-type Props = {
+interface Props {
   params: {
     slug: string;
   };
-};
+}
 
 export default async function ProductPage({ params }: Props) {
-  const { slug } = await params; // ✅ DO NOT USE await here
+  const slug = params.slug; // ✅ No need to await — params is NOT a Promise
 
   const query = `*[_type == "product" && slug.current == $slug][0]{
     title,
