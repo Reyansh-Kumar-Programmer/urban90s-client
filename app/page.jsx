@@ -157,8 +157,8 @@ export default function Home() {
 
           {/* Image */}
           <div>
-            <Image
-              src="/Urb.png"
+            <img
+              src="/urban.jpg"
               alt="How it started"
               width={700}
               height={500}
