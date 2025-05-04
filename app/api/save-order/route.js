@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { client } from "../../../utils/sanityClient";
 import { v4 as uuidv4 } from "uuid";
 
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
     const body = await req.json();
     console.log("Received order:", body);
 
     const { customerName, customerEmail, phoneNumber, address, products, status } = body;
 
-    const sanityProducts = products.map((item: any) => ({
+    const sanityProducts = products.map((item) => ({
       _key: uuidv4(),
       title: item.title,
       image: item.image,

@@ -2,11 +2,11 @@ import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-03-31.basil",
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-04-30.basil",
 });
 
-export async function POST(req: NextRequest) {
+export async function POST(req) {
   try {
     // Get the items and email from the request body
     const { items, email } = await req.json();
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare line items for Stripe checkout
-    const line_items = items.map((item: any) => ({
+    const line_items = items.map((item) => ({
       price_data: {
         currency: "inr", // The currency code for the transaction
         product_data: {
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     // Return more detailed error
     return NextResponse.json(
-      { error: (error as Error).message || "Failed to create checkout session" },
+      { error: error.message || "Failed to create checkout session" },
       { status: 500 }
     );
   }
