@@ -58,13 +58,13 @@ const Header = () => {
             </svg>
           </button>
           <div onClick={() => router.push("/")} className="cursor-pointer">
-            <img src="/urban.jpg" alt="logo" width={100} height={30} className="animate-pulse" />
+            <Image src="/urban.jpg" alt="logo" width={100} height={30} className="animate-pulse" />
           </div>
         </div>
 
         {/* Centered Logo for md and up */}
         <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 cursor-pointer" onClick={() => router.push("/")}> 
-          <Image src="/urb.png" alt="logo" width={100} height={30} className="animate-pulse" />
+          <Image src="/urban.jpg" alt="logo" width={100} height={30} className="animate-pulse" />
         </div>
 
         {/* Nav Links */}
