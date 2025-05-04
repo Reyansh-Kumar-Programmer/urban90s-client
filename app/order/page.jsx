@@ -5,30 +5,13 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { client } from '@/utils/sanityClient';
 
-interface OrderItem {
-  _key: string;
-  title: string;
-  image: string;
-  quantity: number;
-  totalPrice: number;
-  size: string;
-}
-
-interface Order {
-  _id: string;
-  orderNumber: string;
-  orderDate: string;
-  status: string;
-  products: OrderItem[];
-}
-
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const data: Order[] = await client.fetch(
+        const data = await client.fetch(
           `*[_type == "order"] | order(orderDate desc)`
         );
         setOrders(data);
@@ -40,7 +23,7 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString();
   };

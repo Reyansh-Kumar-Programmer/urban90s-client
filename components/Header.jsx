@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { getAllProducts } from "@/components/getAllProducts"; // 🛑 Update the path if needed
+import { getAllProducts } from "../components/getAllProducts"; // 🛑 Update the path if needed
 import { PackageIcon } from "@sanity/icons";
 
 const Header = () => {
@@ -19,14 +19,8 @@ const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  interface Product {
-    _id: string;
-    title: string;
-    slug: { current: string };
-  }
-
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const { isSignedIn, user } = useUser();
   const router = useRouter();
 

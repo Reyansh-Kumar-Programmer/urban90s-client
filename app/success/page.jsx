@@ -17,7 +17,7 @@ export default function SuccessPage() {
   const [shippingAddress, setShippingAddress] = useState("");
   const [error, setError] = useState("");
 
-  const validatePhoneNumber = (num: string) => /^[6-9]\d{9}$/.test(num);
+  const validatePhoneNumber = (num) => /^[6-9]\d{9}$/.test(num);
 
   const saveOrder = async () => {
     if (loading || orderSaved) return;
@@ -37,7 +37,7 @@ export default function SuccessPage() {
     const cookieData = Cookies.get("cart");
     const cartItems = cookieData ? JSON.parse(cookieData) : [];
 
-    const formattedProducts = cartItems.map((item: any) => ({
+    const formattedProducts = cartItems.map((item) => ({
       title: item.title || "",
       image: item.image || "",
       quantity: item.quantity || 1,

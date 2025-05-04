@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { client } from "@/utils/sanityClient";
+import { client } from "../../../utils/sanityClient";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req: Request) {

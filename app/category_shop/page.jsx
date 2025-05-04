@@ -3,14 +3,14 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
-import { client } from "@/utils/sanityClient";
-import Footer from "@/components/Footer";
+import Header from "../../components/Header";
+import { client } from "../../../utils/sanityClient";
+import Footer from "../../components/Footer";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation"; // 👈 new
 
 export default function CategoryShop() {
-  const [products, setProducts] = useState<{ _id: string; title: string; price: number; image: string; slug: { current: string } }[]>([]);
+  const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryTitle, setCategoryTitle] = useState("Shop");
   const searchParams = useSearchParams(); // 👈 get query params

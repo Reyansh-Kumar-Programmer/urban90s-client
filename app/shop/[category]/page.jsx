@@ -4,24 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { client } from "@/utils/sanityClient";
+import Header from "../../../components/Header";
+import Footer from "../../../components/Footer";
+import { client } from "../../../utils/sanityClient";
 import Link from "next/link";
-
-type Product = {
-  _id: string;
-  title: string;
-  price: number;
-  image: string;
-  slug: { current: string };
-};
 
 export default function CategoryPage() {
   const params = useParams();
   const category = params?.category;
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {

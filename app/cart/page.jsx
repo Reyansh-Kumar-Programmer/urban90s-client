@@ -3,32 +3,19 @@
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Image from "next/image";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "../../components/Header";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { loadStripe } from "@stripe/stripe-js";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation"; // at the top
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-// inside your component
-
-interface CartItem {
-  title: string;
-  price: number;
-  quantity: number;
-  size: string;
-  image: string;
-}
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string
-);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export default function CartUI() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-const router = useRouter();
+  const [cartItems, setCartItems] = useState([]);
+  const router = useRouter();
   const { user } = useUser();
   const email = user?.emailAddresses[0]?.emailAddress;
 
@@ -43,17 +30,14 @@ const router = useRouter();
     }
   }, []);
 
-  const handleQuantityChange = (index: number, delta: number) => {
+  const handleQuantityChange = (index, delta) => {
     const updatedCart = [...cartItems];
-    updatedCart[index].quantity = Math.max(
-      1,
-      updatedCart[index].quantity + delta
-    );
+    updatedCart[index].quantity = Math.max(1, updatedCart[index].quantity + delta);
     setCartItems(updatedCart);
     Cookies.set("cart", JSON.stringify(updatedCart), { expires: 7 });
   };
 
-  const handleRemove = (index: number) => {
+  const handleRemove = (index) => {
     const updatedCart = cartItems.filter((_, i) => i !== index);
     setCartItems(updatedCart);
     Cookies.set("cart", JSON.stringify(updatedCart), { expires: 7 });
@@ -64,19 +48,19 @@ const router = useRouter();
       toast.error("Please sign in to continue checkout");
       setTimeout(() => {
         router.push("/authentication/signup");
-      }, 1500); // give them 1.5 sec to read the toast
+      }, 1500);
       return;
     }
-  
+
     try {
       const cookieData = Cookies.get("cart");
       const cartItems = cookieData ? JSON.parse(cookieData) : [];
-  
+
       if (cartItems.length === 0) {
         toast.error("Your cart is empty");
         return;
       }
-  
+
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,9 +69,9 @@ const router = useRouter();
           email: email,
         }),
       });
-  
+
       if (!res.ok) throw new Error("Failed to create checkout session");
-  
+
       const data = await res.json();
       window.location.href = data.url;
     } catch (err) {
@@ -96,10 +80,7 @@ const router = useRouter();
     }
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = 0;
   const total = subtotal - discount;
 

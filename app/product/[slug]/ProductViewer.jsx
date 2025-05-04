@@ -3,24 +3,16 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Cookies from "js-cookie"; // 🍪 import cookies
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "../../../components/Header";
+import Footer from "../../../components/Footer";
 import { PhoneIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
-import { client } from "@/utils/sanityClient"; // adjust path if different
+import { client } from "../../../utils/sanityClient";
 import { v4 as uuidv4 } from "uuid";
 
-interface Product {
-  title: string;
-  price: number;
-  originalPrice?: number;
-  images: string[];
-  sizes: string[];
-}
-
-export default function ProductViewer({ product }: { product: Product }) {
+export default function ProductViewer({ product }) {
   const [mainImage, setMainImage] = useState(product.images?.[0]);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [quantity, setQuantity] = useState(1);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
@@ -33,7 +25,7 @@ export default function ProductViewer({ product }: { product: Product }) {
     }
   }, []);
 
-  const handleSizeClick = (size: string) => {
+  const handleSizeClick = (size) => {
     setSelectedSize(size);
   };
 
@@ -135,7 +127,7 @@ export default function ProductViewer({ product }: { product: Product }) {
             <div className="mb-4">
               <p className="font-medium mb-2">Size</p>
               <div className="flex gap-2">
-                {product.sizes?.map((size: string) => (
+                {product.sizes?.map((size) => (
                   <button
                     key={size}
                     onClick={() => handleSizeClick(size)}
@@ -217,10 +209,10 @@ export default function ProductViewer({ product }: { product: Product }) {
                 const form = e.currentTarget;
 
                 const formData = {
-                  customerName: (form.elements.namedItem("name") as HTMLInputElement).value,
-                  phoneNumber: form.phone.value,
-                  customerEmail: form.email.value,
-                  address: form.address.value,
+                  customerName: form.elements.name.value,
+                  phoneNumber: form.elements.phone.value,
+                  customerEmail: form.elements.email.value,
+                  address: form.elements.address.value,
                   quantity,
                   size: selectedSize,
                   productTitle: product.title,
@@ -230,12 +222,12 @@ export default function ProductViewer({ product }: { product: Product }) {
                 const orderDoc = {
                   _type: "order",
                   customerName: formData.customerName,
-                  phoneNumber: formData.phoneNumber, // Save the phone number
+                  phoneNumber: formData.phoneNumber,
                   customerEmail: formData.customerEmail,
-                  address: formData.address, // Save the address
-                  orderNumber: uuidv4(), // Unique order ID
-                  status: "pending", // Set default status
-                  orderDate: new Date().toISOString(), // Save the current date and time as orderDate
+                  address: formData.address,
+                  orderNumber: uuidv4(),
+                  status: "pending",
+                  orderDate: new Date().toISOString(),
                   products: [
                     {
                       _key: uuidv4(),

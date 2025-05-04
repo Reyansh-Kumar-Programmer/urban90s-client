@@ -2,11 +2,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { client } from "@/utils/sanityClient"; // Your custom Sanity client setup
+import { client } from "../utils/sanityClient";
 import Image from "next/image";
-import Header from "@/components/Header";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import Footer from "@/components/Footer";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const fetchProducts = async () => {
   const query = `*[_type == "product"] | order(_createdAt desc) [0...4] {
@@ -21,14 +20,7 @@ const fetchProducts = async () => {
 };
 
 export default function Home() {
-  interface Product {
-    _id: string;
-    title: string;
-    price: number;
-    image: string;
-  }
-  
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState([]);
   const router = useRouter();
 
   // Fetch products on component mount

@@ -5,12 +5,12 @@ import React, { useState } from "react";
 
 function Footer() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState("idle"); // Removed TypeScript type annotation
 
-  const handleSubscribe = async (e: React.FormEvent) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    const email = (document.getElementById("email-input") as HTMLInputElement).value;
-  
+    const email = document.getElementById("email-input").value;
+
     try {
       const response = await fetch("https://script.google.com/macros/s/AKfycbyTc3-DbMrQAo3LQBdSTiWgHq8nY_xmRouUdzorGVctwHFu2J2aabx0wCvfCdXY6zXv/exec", {
         method: "POST",
@@ -19,16 +19,19 @@ function Footer() {
         },
         body: JSON.stringify({ email }),
       });
-  
+
       const result = await response.json();
       if (result.success) {
         alert("Subscribed successfully!");
+        setStatus("success");
       } else {
         alert("Something went wrong!");
+        setStatus("error");
       }
     } catch (err) {
       console.error("Error subscribing:", err);
       alert("Failed to subscribe. Check console for details.");
+      setStatus("error");
     }
   };
 
