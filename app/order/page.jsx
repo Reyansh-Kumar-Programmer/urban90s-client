@@ -1,9 +1,9 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { client } from '@/utils/sanityClient';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import { client } from '../../utils/sanityClient';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
