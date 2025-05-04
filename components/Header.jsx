@@ -58,7 +58,7 @@ const Header = () => {
             </svg>
           </button>
           <div onClick={() => router.push("/")} className="cursor-pointer">
-            <Image src="/urban.png" alt="logo" width={100} height={30} className="animate-pulse" />
+            <Image src="/urban.jpg" alt="logo" width={100} height={30} className="animate-pulse" />
           </div>
         </div>
 
