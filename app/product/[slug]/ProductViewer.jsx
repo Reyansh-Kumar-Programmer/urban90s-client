@@ -115,13 +115,6 @@ export default function ProductViewer({ product }) {
             <p className="text-sm text-gray-500 mb-4">
               Taxes included. Calculated at checkout.
             </p>
-            <p className="text-sm mb-6">
-              Pay over time for orders over <strong>₹35.00</strong> with{" "}
-              <span className="text-[#5a31f4] font-medium">Shop Pay</span>.{" "}
-              <a href="#" className="underline">
-                Learn more
-              </a>
-            </p>
 
             {/* Size Selection */}
             <div className="mb-4">
@@ -177,10 +170,6 @@ export default function ProductViewer({ product }) {
                 Add to cart <ShoppingCartIcon width={25} />
               </button>
             </div>
-
-            <p className="text-center underline text-sm mb-6">
-              More payment options
-            </p>
 
             <ul className="list-disc pl-5 space-y-3 text-gray-700 text-sm">
               <li>Free Shipping</li>

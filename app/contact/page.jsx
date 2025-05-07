@@ -49,7 +49,7 @@ export default function Contact() {
             Send
           </button>
           <input type="hidden" name="_captcha" value="false" />
-          <input type="hidden" name="_next" value="http://localhost:3000/" />
+          <input type="hidden" name="_next" value="https://urban90s.vercel.app/contact/formSuccess"/>
         </form>
       </div>
 

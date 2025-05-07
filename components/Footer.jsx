@@ -2,38 +2,38 @@
 
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import toast from "react-hot-toast";
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 function Footer() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("idle"); // Removed TypeScript type annotation
+  const [status, setStatus] = useState("idle");
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    const email = document.getElementById("email-input").value;
-
-    try {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbyTc3-DbMrQAo3LQBdSTiWgHq8nY_xmRouUdzorGVctwHFu2J2aabx0wCvfCdXY6zXv/exec", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        alert("Subscribed successfully!");
-        setStatus("success");
-      } else {
-        alert("Something went wrong!");
-        setStatus("error");
-      }
-    } catch (err) {
-      console.error("Error subscribing:", err);
-      alert("Failed to subscribe. Check console for details.");
+    setStatus("loading");
+  
+    const { error } = await supabase
+      .from("subscriptions")
+      .upsert([{ email }], { onConflict: 'email' }) // prevent duplicates
+      .select(); // get full error message if any
+  
+    if (error) {
+      console.error("Supabase insert error:", error.message);
+      toast.error("Something went wrong. Please try again.");
       setStatus("error");
+      return;
     }
+  
+    toast.success("You're subscribed!");
+    setStatus("success");
+    setEmail("");
   };
+  
 
   return (
     <footer className="bg-white border-t mt-20 pt-12 pb-6">
@@ -42,11 +42,13 @@ function Footer() {
         <p className="mt-2 text-gray-600">
           Be the first to know about new collections and exclusive offers.
         </p>
-        <form onSubmit={handleSubscribe} className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
+        <form
+          onSubmit={handleSubscribe}
+          className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2"
+        >
           <input
             type="email"
             value={email}
-            id="email-input"
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             required
@@ -64,7 +66,9 @@ function Footer() {
           <p className="text-green-600 mt-2 text-sm">Thanks for subscribing!</p>
         )}
         {status === "error" && (
-          <p className="text-red-500 mt-2 text-sm">Something went wrong. Try again.</p>
+          <p className="text-red-500 mt-2 text-sm">
+            Something went wrong. Try again.
+          </p>
         )}
       </div>
 
