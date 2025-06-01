@@ -9,6 +9,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
+
 function Footer() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
@@ -16,28 +17,26 @@ function Footer() {
   const handleSubscribe = async (e) => {
     e.preventDefault();
     setStatus("loading");
-  
+
     const { error } = await supabase
       .from("subscriptions")
-      .upsert([{ email }], { onConflict: 'email' }) // prevent duplicates
-      .select(); // get full error message if any
-  
+      .upsert([{ email }], { onConflict: "email" });
+
     if (error) {
       console.error("Supabase insert error:", error.message);
       toast.error("Something went wrong. Please try again.");
       setStatus("error");
       return;
     }
-  
+
     toast.success("You're subscribed!");
     setStatus("success");
     setEmail("");
   };
-  
 
   return (
-    <footer className="bg-white border-t mt-20 pt-12 pb-6">
-      <div className="mx-auto px-4 text-center">
+    <footer className="bg-white border-t pt-12 pb-6 mt-12"> {/* Reduced margin-top */}
+      <div className="mx-auto px-4 text-center max-w-2xl">
         <h2 className="text-2xl font-bold">Subscribe to our emails</h2>
         <p className="mt-2 text-gray-600">
           Be the first to know about new collections and exclusive offers.
@@ -72,7 +71,7 @@ function Footer() {
         )}
       </div>
 
-      <div className="text-center mt-10 text-sm text-gray-500 px-4">
+      <div className="text-center mt-8 text-xs text-gray-500 px-4">
         <div className="flex flex-wrap justify-center gap-x-2 gap-y-1">
           <span>© 2025, Urban90s Created by Reyansh</span>
           <span>·</span>
@@ -81,7 +80,7 @@ function Footer() {
           </a>
           <span>·</span>
           <a href="#" className="hover:underline">
-            Contact information
+            Contact
           </a>
           <span>·</span>
           <a href="#" className="hover:underline">

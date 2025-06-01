@@ -237,53 +237,67 @@ export default function CartUI() {
               </div>
 
               <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-
-                  const form = e.currentTarget;
-                  const formData = {
-                    customerName: form.elements.name.value,
-                    phoneNumber: form.elements.phone.value,
-                    customerEmail: form.elements.email.value,
-                    address: form.elements.address.value,
-                  };
-
-                  // Create an array of product objects from cartItems
-                  const products = cartItems.map((item) => ({
-                    _key: uuidv4(),
-                    title: item.title,
-                    image: item.image,
-                    quantity: item.quantity,
-                    size: item.size,
-                    totalPrice: item.price * item.quantity,
-                  }));
-
-                  const orderDoc = {
-                    _type: "order",
-                    customerName: formData.customerName,
-                    phoneNumber: formData.phoneNumber,
-                    customerEmail: formData.customerEmail,
-                    address: formData.address,
-                    orderNumber: uuidv4(),
-                    status: "pending",
-                    orderDate: new Date().toISOString(),
-                    products: products,
-                  };
-
-                  try {
-                    const result = await client.create(orderDoc);
-                    console.log("✅ Order saved to Sanity:", result);
-                    toast.success("Order placed! We'll call you soon.");
-                    setShowForm(false);
-                    Cookies.remove('cart');
-                    router.push("/order");
-                  } catch (error) {
-                    console.error("❌ Failed to save order:", error);
-                    alert(
-                      "There was a problem submitting your order. Please try again."
-                    );
-                  }
-                }}
+              onSubmit={async (e) => {
+                e.preventDefault();
+              
+                const form = e.currentTarget;
+                const formData = {
+                  customerName: form.elements.name.value,
+                  phoneNumber: form.elements.phone.value.trim(),
+                  customerEmail: form.elements.email.value.trim(),
+                  address: form.elements.address.value.trim(),
+                };
+              
+                // Phone number validation (must be exactly 10 digits, numeric)
+                const phoneRegex = /^[6-9]\d{9}$/;
+                if (!phoneRegex.test(formData.phoneNumber)) {
+                  toast.error("Please enter a valid 10-digit Indian phone number");
+                  return;
+                }
+              
+                // Email validation (must end with '@gmail.com')
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+                if (!emailRegex.test(formData.customerEmail)) {
+                  toast.error("Please enter a valid Gmail address (example@gmail.com)");
+                  return;
+                }
+              
+                // Create an array of product objects from cartItems
+                const products = cartItems.map((item) => ({
+                  _key: uuidv4(),
+                  title: item.title,
+                  image: item.image,
+                  quantity: item.quantity,
+                  size: item.size,
+                  totalPrice: item.price * item.quantity,
+                }));
+              
+                const orderDoc = {
+                  _type: "order",
+                  customerName: formData.customerName,
+                  phoneNumber: formData.phoneNumber,
+                  customerEmail: formData.customerEmail,
+                  address: formData.address,
+                  orderNumber: uuidv4(),
+                  status: "pending",
+                  orderDate: new Date().toISOString(),
+                  products: products,
+                };
+              
+                try {
+                  const result = await client.create(orderDoc);
+                  console.log("✅ Order saved to Sanity:", result);
+                  toast.success("Order placed! We'll call you soon.");
+                  setShowForm(false);
+                  Cookies.remove("cart");
+                  router.push("/order");
+                } catch (error) {
+                  console.error("❌ Failed to save order:", error);
+                  alert(
+                    "There was a problem submitting your order. Please try again."
+                  );
+                }
+              }}
               >
                 {/* User Info */}
                 <div className="mb-3">

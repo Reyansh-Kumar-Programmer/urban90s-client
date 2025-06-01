@@ -231,17 +231,37 @@ export default function ProductViewer({ product }) {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const form = e.currentTarget;
+                
+                  const phoneNumber = form.elements.phone.value.trim();
+                  const customerEmail = form.elements.email.value.trim();
+                
+                  // Indian phone number regex: starts with 6-9, followed by 9 digits
+                  const phoneRegex = /^[6-9]\d{9}$/;
+                
+                  // Gmail regex: ends with @gmail.com (case insensitive)
+                  const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+                
+                  if (!phoneRegex.test(phoneNumber)) {
+                    toast.error("Please enter a valid Indian phone number.");
+                    return;
+                  }
+                
+                  if (!gmailRegex.test(customerEmail)) {
+                    toast.error("Please enter a valid Gmail address (example@gmail.com)");
+                    return;
+                  }
+                
                   const formData = {
-                    customerName: form.elements.name.value,
-                    phoneNumber: form.elements.phone.value,
-                    customerEmail: form.elements.email.value,
-                    address: form.elements.address.value,
+                    customerName: form.elements.name.value.trim(),
+                    phoneNumber,
+                    customerEmail,
+                    address: form.elements.address.value.trim(),
                     quantity,
                     size: selectedSize,
                     productTitle: product.title,
                     productImage: product.images?.[0],
                   };
-
+                
                   const orderDoc = {
                     _type: "order",
                     customerName: formData.customerName,
@@ -262,17 +282,15 @@ export default function ProductViewer({ product }) {
                       },
                     ],
                   };
-
+                
                   try {
                     const result = await client.create(orderDoc);
                     console.log("✅ Order saved to Sanity:", result);
-                    toast.success("Order placed! We'll call you soon.")
+                    toast.success("Order placed! We'll call you soon.");
                     setShowForm(false);
                   } catch (error) {
                     console.error("❌ Failed to save order:", error);
-                    toast.error(
-                      "Order submission failed. Please try again."
-                    );
+                    toast.error("Order submission failed. Please try again.");
                   }
                 }}
               >
