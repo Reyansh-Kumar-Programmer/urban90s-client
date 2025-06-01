@@ -3,7 +3,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-
   // Allow remote images from Sanity
   images: {
     remotePatterns: [

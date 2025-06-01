@@ -6,14 +6,14 @@ import {
   UserIcon,
   ShoppingBagIcon,
   XMarkIcon,
-  CubeIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { getAllProducts } from "../components/getAllProducts"; // 🛑 Update the path if needed
+import { getAllProducts } from "../components/getAllProducts";
 import { PackageIcon } from "@sanity/icons";
 import { client } from "../utils/sanityClient";
+import Cookies from "js-cookie";
 
 const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -22,9 +22,11 @@ const Header = () => {
   const [categories, setCategories] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [cartItemCount, setCartItemCount] = useState(0);
   const { isSignedIn, user } = useUser();
   const router = useRouter();
 
+  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -36,13 +38,13 @@ const Header = () => {
         );
         setCategories(data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
       }
     };
-
     fetchCategories();
   }, []);
 
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       const data = await getAllProducts();
@@ -51,6 +53,7 @@ const Header = () => {
     fetchProducts();
   }, []);
 
+  // Filter search results
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredProducts([]);
@@ -62,12 +65,32 @@ const Header = () => {
     }
   }, [searchTerm, allProducts]);
 
+  // Fetch cart items from cookies
+  useEffect(() => {
+    const cartCookie = Cookies.get("cart");
+    if (cartCookie) {
+      try {
+        const cart = JSON.parse(cartCookie);
+        const itemCount = cart.reduce(
+          (total, item) => total + (item.quantity || 1),
+          0
+        );
+        setCartItemCount(itemCount);
+      } catch (err) {
+        console.error("Error parsing cart cookie:", err);
+      }
+    } else {
+      setCartItemCount(0);
+    }
+  }, []);
+
   return (
     <motion.header
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Top Banner */}
       <motion.div
         className="bg-blue-600 text-white text-sm text-center py-2 font-semibold"
         initial={{ y: -50 }}
@@ -77,6 +100,7 @@ const Header = () => {
         Next 5 to order get extra free stickers
       </motion.div>
 
+      {/* Navbar */}
       <motion.nav
         className="relative flex items-center justify-between px-4 md:px-6 py-3 border-b h-16"
         initial={{ y: -50, opacity: 0 }}
@@ -111,7 +135,7 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Centered Logo for md and up */}
+        {/* Centered Logo */}
         <div
           className="hidden md:block absolute left-1/2 transform -translate-x-1/2 cursor-pointer"
           onClick={() => router.push("/")}
@@ -128,16 +152,15 @@ const Header = () => {
         {/* Nav Links */}
         <div className="hidden md:flex gap-6 text-sm font-medium">
           <a
-            href="#"
             onClick={() => router.push("/shop")}
-            className="relative group"
+            className="relative group cursor-pointer"
           >
-            Shop All{" "}
+            Shop All
             <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-black transition-all duration-300 group-hover:w-full"></span>
           </a>
           {categories.map((cat) => (
             <a
-            key={cat.slug.current}
+              key={cat.slug.current}
               onClick={() => router.push(`/shop/${cat.slug.current}`)}
               className="relative group cursor-pointer"
             >
@@ -146,17 +169,16 @@ const Header = () => {
             </a>
           ))}
           <a
-            href="#"
             onClick={() => router.push("/contact")}
-            className="relative group"
+            className="relative group cursor-pointer"
           >
-            Contact{" "}
+            Contact
             <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-black transition-all duration-300 group-hover:w-full"></span>
           </a>
         </div>
 
         {/* Icons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 relative">
           <MagnifyingGlassIcon
             className="h-5 w-5 text-gray-800 cursor-pointer"
             onClick={() => setShowSearch(true)}
@@ -175,10 +197,17 @@ const Header = () => {
               onClick={() => router.push("/authentication/signin")}
             />
           )}
-          <ShoppingBagIcon
+          <div
             onClick={() => router.push("/cart")}
-            className="h-5 w-5 text-gray-800 cursor-pointer"
-          />
+            className="relative cursor-pointer"
+          >
+            <ShoppingBagIcon className="h-5 w-5 text-gray-800" />
+            {cartItemCount > 0 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {cartItemCount}
+              </div>
+            )}
+          </div>
           {isSignedIn && (
             <PackageIcon
               onClick={() => router.push("/order")}
@@ -188,13 +217,13 @@ const Header = () => {
         </div>
       </motion.nav>
 
-      {/* Mobile Nav Menu */}
+      {/* Mobile Nav */}
       {showMobileMenu && (
         <div className="md:hidden bg-white border-b shadow px-4 py-4 flex flex-col gap-4">
           <a onClick={() => router.push("/shop")}>Shop All</a>
           {categories.map((cat) => (
             <a
-            key={cat.slug.current}
+              key={cat.slug.current}
               onClick={() => router.push(`/shop/${cat.slug.current}`)}
             >
               {cat.name}
@@ -204,7 +233,7 @@ const Header = () => {
         </div>
       )}
 
-      {/* Search Bar + Results */}
+      {/* Search Bar */}
       <AnimatePresence>
         {showSearch && (
           <motion.div

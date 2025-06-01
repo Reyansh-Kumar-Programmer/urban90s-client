@@ -6,5 +6,5 @@ export const client = createClient({
   dataset: 'production',        // or 'development', whatever you use
   useCdn: false,                 // `true` for faster, cached response (good for public data)
   apiVersion: '2023-12-01',
-  token: process.env.SANITY_SECRET_TOKEN,   // use the latest date-based version
+  token: process.env.NEXT_PUBLIC_SANITY_API_WRITE_TOKEN  // use the latest date-based version
 })

@@ -12,7 +12,8 @@ export default async function ProductPage({ params }) {
     originalPrice,
     "previewImage": previewImage.asset->url,
     "images": images[].asset->url,
-    sizes
+    sizes,
+    slug
   }`;
 
   const product = await client.fetch(query, { slug });

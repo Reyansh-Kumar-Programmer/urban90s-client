@@ -5,9 +5,15 @@ import Image from "next/image";
 import Cookies from "js-cookie"; // 🍪 import cookies
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
-import { PhoneIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
+import {
+  PhoneIcon,
+  ShoppingCartIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import { client } from "../../../utils/sanityClient";
 import { v4 as uuidv4 } from "uuid";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function ProductViewer({ product }) {
   const [mainImage, setMainImage] = useState(product.images?.[0]);
@@ -19,9 +25,9 @@ export default function ProductViewer({ product }) {
     // Print the cart cookie every time the component mounts
     const cart = Cookies.get("cart");
     if (cart) {
-      console.log("🛒 Cart Cookie:", JSON.parse(cart));
+      // console.log("🛒 Cart Cookie:", JSON.parse(cart));
     } else {
-      console.log("🛒 Cart is empty.");
+      // console.log("🛒 Cart is empty.");
     }
   }, []);
 
@@ -39,26 +45,30 @@ export default function ProductViewer({ product }) {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      alert("Please select a size before adding to cart.");
+      toast.error("Choose a size before adding to cart!");
       return;
     }
-
+  
     const cart = Cookies.get("cart");
     const currentCart = cart ? JSON.parse(cart) : [];
-
+  
     const newItem = {
       title: product.title,
       price: product.price,
       size: selectedSize,
       quantity,
       image: product.images?.[0],
+      slug: product.slug?.current || product.slug, // Fetch the slug from Sanity
     };
-
+  
     const updatedCart = [...currentCart, newItem];
-    Cookies.set("cart", JSON.stringify(updatedCart), { expires: 7 }); // expires in 7 days
-
-    console.log("✅ Added to cart:", newItem);
+    Cookies.set("cart", JSON.stringify(updatedCart), { expires: 7 });
+  
+    // console.log("✅ Added to cart:", newItem);
     console.log("🧾 Updated cart:", updatedCart);
+  
+    // Optionally, show a success toast:
+    toast.success("Item added to cart!");
   };
 
   return (
@@ -171,7 +181,7 @@ export default function ProductViewer({ product }) {
               </button>
             </div>
 
-            <ul className="list-disc pl-5 space-y-3 text-gray-700 text-sm">
+            <ul className="list-disc pl-5 space-y-6 text-gray-700 text-sm">
               <li>Free Shipping</li>
               <li>Unisex</li>
               <li>Comes with 1 free sticker</li>
@@ -182,163 +192,203 @@ export default function ProductViewer({ product }) {
         </div>
       </div>
       {showForm && (
-        <div className="fixed inset-0 bg-gray-200 bg-opacity-50 z-50 flex justify-center items-center">
-          <div className="bg-white rounded-xl p-6 w-[90%] md:w-[500px] relative shadow-2xl">
-            <button
-              className="absolute top-2 right-4 text-lg font-bold"
-              onClick={() => setShowForm(false)}
+        <AnimatePresence>
+          <motion.div
+            key="backdrop"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              key="modal"
+              className="relative w-[90%] max-w-md rounded-xl bg-white p-8 shadow-2xl"
+              initial={{ scale: 0.8, opacity: 0, y: -50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 50 }}
+              transition={{ type: "spring", damping: 15, stiffness: 200 }}
             >
-              ×
-            </button>
-            <h2 className="text-xl font-bold mb-4">Confirm on Call</h2>
-
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const form = e.currentTarget;
-
-                const formData = {
-                  customerName: form.elements.name.value,
-                  phoneNumber: form.elements.phone.value,
-                  customerEmail: form.elements.email.value,
-                  address: form.elements.address.value,
-                  quantity,
-                  size: selectedSize,
-                  productTitle: product.title,
-                  productImage: product.images?.[0],
-                };
-
-                const orderDoc = {
-                  _type: "order",
-                  customerName: formData.customerName,
-                  phoneNumber: formData.phoneNumber,
-                  customerEmail: formData.customerEmail,
-                  address: formData.address,
-                  orderNumber: uuidv4(),
-                  status: "pending",
-                  orderDate: new Date().toISOString(),
-                  products: [
-                    {
-                      _key: uuidv4(),
-                      title: formData.productTitle,
-                      image: formData.productImage,
-                      quantity: formData.quantity,
-                      size: formData.size,
-                      totalPrice: product.price * formData.quantity,
-                    },
-                  ],
-                };
-
-                try {
-                  const result = await client.create(orderDoc);
-                  console.log("✅ Order saved to Sanity:", result);
-                  alert("Your order has been placed! We will call you soon.");
-                  setShowForm(false);
-                } catch (error) {
-                  console.error("❌ Failed to save order:", error);
-                  alert(
-                    "There was a problem submitting your order. Please try again."
-                  );
-                }
-              }}
-            >
-              {/* User Info */}
-              <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                required
-                className="w-full px-4 py-2 mb-3 border rounded-lg"
-              />
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                required
-                className="w-full px-4 py-2 mb-3 border rounded-lg"
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                className="w-full px-4 py-2 mb-3 border rounded-lg"
-              />
-              <textarea
-                name="address"
-                placeholder="Address"
-                required
-                className="w-full px-4 py-2 mb-4 border rounded-lg resize-none"
-              />
-
-              {/* Size Selector */}
-              <div className="mb-4">
-                <p className="font-medium mb-1">Select Size:</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes?.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 rounded-full border transition ${
-                        selectedSize === size
-                          ? "bg-black text-white border-black"
-                          : "bg-white text-black hover:bg-gray-100"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+              {/* Close button */}
+              <div className="flex-row justify-between items-center mb-6">
+                <motion.h2
+                  className="mb-4 text-2xl font-semibold"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  Confirm on Call
+                </motion.h2>
+                <motion.button
+                  whileHover={{ rotate: 90, scale: 1.2 }}
+                  className="absolute right-6 top-6 text-lg font-bold"
+                  onClick={() => setShowForm(false)}
+                >
+                  <XMarkIcon width={25} />
+                </motion.button>
               </div>
 
-              {/* Quantity Controller */}
-              <div className="mb-4">
-                <p className="font-medium mb-1">Quantity:</p>
-                <div className="flex items-center gap-4 border px-4 py-2 rounded-full w-fit">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}
-                    className="text-xl font-bold"
-                  >
-                    −
-                  </button>
-                  <span className="text-lg">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((prev) => prev + 1)}
-                    className="text-xl font-bold"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const formData = {
+                    customerName: form.elements.name.value,
+                    phoneNumber: form.elements.phone.value,
+                    customerEmail: form.elements.email.value,
+                    address: form.elements.address.value,
+                    quantity,
+                    size: selectedSize,
+                    productTitle: product.title,
+                    productImage: product.images?.[0],
+                  };
 
-              {/* Product Info */}
-              <div className="mb-4">
-                <p className="font-medium mb-1">Product:</p>
-                <div className="flex items-center gap-3">
-                  <Image
-                    src={product.images?.[0]}
-                    alt="Product"
-                    width={50}
-                    height={50}
-                    className="rounded"
-                  />
-                  <span>{product.title}</span>
-                </div>
-              </div>
+                  const orderDoc = {
+                    _type: "order",
+                    customerName: formData.customerName,
+                    phoneNumber: formData.phoneNumber,
+                    customerEmail: formData.customerEmail,
+                    address: formData.address,
+                    orderNumber: uuidv4(),
+                    status: "pending",
+                    orderDate: new Date().toISOString(),
+                    products: [
+                      {
+                        _key: uuidv4(),
+                        title: formData.productTitle,
+                        image: formData.productImage,
+                        quantity: formData.quantity,
+                        size: formData.size,
+                        totalPrice: product.price * formData.quantity,
+                      },
+                    ],
+                  };
 
-              {/* Submit */}
-              <button
-                type="submit"
-                className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+                  try {
+                    const result = await client.create(orderDoc);
+                    console.log("✅ Order saved to Sanity:", result);
+                    toast.success("Order placed! We'll call you soon.")
+                    setShowForm(false);
+                  } catch (error) {
+                    console.error("❌ Failed to save order:", error);
+                    toast.error(
+                      "Order submission failed. Please try again."
+                    );
+                  }
+                }}
               >
-                Submit
-              </button>
-            </form>
-          </div>
-        </div>
+                {/* User Info */}
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                    required
+                    className="w-full rounded-lg border px-4 py-2"
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Phone Number"
+                    required
+                    className="w-full rounded-lg border px-4 py-2"
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    required
+                    className="w-full rounded-lg border px-4 py-2"
+                  />
+                </div>
+                <div className="mb-4">
+                  <textarea
+                    name="address"
+                    placeholder="Address"
+                    required
+                    className="w-full resize-none rounded-lg border px-4 py-2"
+                  />
+                </div>
+
+                {/* Size Selector */}
+                <div className="mb-4">
+                  <p className="mb-1 font-medium">Select Size:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.sizes?.map((size) => (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`rounded-full border px-4 py-2 transition ${
+                          selectedSize === size
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-black hover:bg-gray-100"
+                        }`}
+                      >
+                        {size}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quantity Controller */}
+                <div className="mb-4">
+                  <p className="mb-1 font-medium">Quantity:</p>
+                  <div className="flex w-fit items-center gap-4 rounded-full border px-4 py-2">
+                    <motion.button
+                      whileTap={{ scale: 0.8 }}
+                      type="button"
+                      onClick={() =>
+                        setQuantity((prev) => Math.max(prev - 1, 1))
+                      }
+                      className="text-xl font-semibold"
+                    >
+                      -
+                    </motion.button>
+                    <span className="text-lg">{quantity}</span>
+                    <motion.button
+                      whileTap={{ scale: 0.8 }}
+                      type="button"
+                      onClick={() => setQuantity((prev) => prev + 1)}
+                      className="text-xl font-semibold"
+                    >
+                      +
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* Product Info */}
+                <div className="mb-4">
+                  <p className="mb-1 font-medium">Product:</p>
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={product.images?.[0]}
+                      alt="Product"
+                      width={50}
+                      height={50}
+                      className="rounded"
+                    />
+                    <span>{product.title}</span>
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="submit"
+                  className="mt-4 w-full rounded-lg bg-indigo-600 py-2 text-white hover:bg-indigo-700"
+                >
+                  Submit
+                </motion.button>
+              </form>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       )}
 
       <Footer />

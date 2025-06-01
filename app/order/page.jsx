@@ -25,7 +25,11 @@ export default function OrdersPage() {
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear());
+  
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -34,7 +38,7 @@ export default function OrdersPage() {
       <div className="max-w-4xl mx-auto px-4 pt-12">
         <h1 className="text-3xl font-bold mb-8">My Orders</h1>
         {orders.map((order) => (
-          <div key={order._id} className="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div key={order._id} className="bg-white rounded-xl border-2 border-gray-500 shadow-md p-6 mb-6">
             <div className="flex justify-between text-sm text-gray-600">
               <div>
                 <p className="font-medium">Order Number</p>
