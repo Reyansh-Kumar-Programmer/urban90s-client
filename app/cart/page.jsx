@@ -52,7 +52,7 @@ export default function CartUI() {
     setCartItems(updatedCart);
     Cookies.set("cart", JSON.stringify(updatedCart), { expires: 7 });
   };
-
+  
   const checkoutHandler = async () => {
     if (!user) {
       toast.error("Please sign in to continue checkout");
@@ -94,6 +94,20 @@ export default function CartUI() {
   const discount = 0;
   const total = subtotal - discount;
 
+  const handleConfirmOnCallClick = () => {
+    if (!user) {
+      toast.error("Please sign in to proceed.");
+      window.location.href = "/authentication/signin";
+      return;
+    }
+  
+    if (cartItems.length === 0) {
+      toast.error("Please add items to your cart before confirming.");
+      return; // 👈 prevent form opening if cart is empty
+    }
+  
+    setShowForm(true);
+  };
   return (
     <>
       <Header />
@@ -192,7 +206,7 @@ export default function CartUI() {
               <span>₹{total.toLocaleString()}</span>
             </div>
             <button
-              onClick={() => setShowForm(true)}
+              onClick={handleConfirmOnCallClick}
               className="w-full mt-6 cursor-pointer bg-black text-white py-3 rounded-lg hover:bg-white hover:text-black border-2 transition"
             >
               Confirm Your Order 📞

@@ -10,12 +10,14 @@ import {
   ShoppingCartIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
+import { useUser } from "@clerk/nextjs";
 import { client } from "../../../utils/sanityClient";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 export default function ProductViewer({ product }) {
+  const { user } = useUser();
   const [mainImage, setMainImage] = useState(product.images?.[0]);
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -41,6 +43,15 @@ export default function ProductViewer({ product }) {
 
   const decrementQuantity = () => {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const handleConfirmOnCallClick = () => {
+    if (!user) {
+      toast.error("Please sign in to proceed.");
+      window.location.href = "/authentication/signin"; // ✅ redirect
+      return;
+    }
+    setShowForm(true);
   };
 
   const handleAddToCart = () => {
@@ -163,7 +174,7 @@ export default function ProductViewer({ product }) {
             {/* Buttons */}
             <div className="mb-3">
               <button
-                onClick={() => setShowForm(true)}
+                onClick={handleConfirmOnCallClick}
                 className="w-full bg-[#5a31f4] flex justify-center items-center hover:bg-[#4825c5] text-white py-3 rounded-full text-lg transition duration-200"
               >
                 Confirm on<span className="font-bold ml-1">Call</span>
